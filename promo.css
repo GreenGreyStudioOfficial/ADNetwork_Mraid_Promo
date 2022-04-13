@@ -1,0 +1,306 @@
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: black;
+}
+
+#promo {
+    border-radius: 2.5em;
+    background: #e8eaef;
+    display: grid;
+    width:100%;
+    height:100%;
+    grid-template-areas: 'main';
+}
+
+#container {
+    background: #E8EAEF;
+    box-shadow: inset -3px 4px 56px rgb(44 62 70 / 24%);
+    border-radius: 2.5em;
+    grid-area: main;
+    margin: 10px;
+}
+
+.swipeView {
+    display: grid;
+    grid-template-columns: repeat(4, 100%);
+    will-change: transform;
+    align-content: center;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-coordinate: 0 0;
+    scroll-snap-points-x: repeat(auto-fill,100%);
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    grid-area: main;
+    z-index: 10;
+}
+
+.frameView {
+    height: 100vh;
+    scroll-snap-align: start;
+    display: grid;
+    grid-template-areas: 'content';
+    overflow: hidden;
+}
+
+.overlayView {
+    grid-area:content;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.topButtonsContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    pointer-events: all;
+}
+
+.bottomButtonsContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    pointer-events: all;
+}
+
+.leftButtonsContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    pointer-events: none;
+}
+
+.rightButtonsContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: end;
+    pointer-events: none;
+}
+
+
+.videoView {
+    object-fit: cover;
+    width: 100%;
+    height: 100vh;
+    grid-area:content;
+}
+
+.imageСard {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: center;
+    grid-area:content;
+}
+
+.imageСard-landscape {
+    flex-direction: row;
+
+    margin-top: 30px;
+}
+
+.imageСard-portrait {
+    flex-direction: column;
+}
+
+
+.dots-wrapper {
+    display: flex;
+    align-items: center;
+    margin: 10px;
+}
+
+.dot {
+    width: 18px;
+    height: auto;
+    margin: auto;
+}
+
+.infoButtonVideo {
+    width: auto;
+    height: 30px;
+    margin-top: 20px;
+    left: 0;
+    cursor: pointer;
+}
+
+.closeButtonVideo {
+    width: auto;
+    height: 30px;
+    right: 0;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+.closeButtonBanner {
+    width: auto;
+    height: 50px;
+    margin-top: 20px;
+    margin-right: 15px;
+    margin-left: auto;
+    cursor: pointer;
+    pointer-events: all;
+}
+
+.bannerWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.banner {
+    object-fit:cover;
+    margin: 0;
+    width: 100%;
+    height: auto;
+    background: #E8EAEF;
+    box-shadow: 0px 4px 34px rgb(28 69 87 / 25%);
+    border-radius: 1.5em;
+}
+
+.banner-portrait {
+    width: 36vh;
+    height: auto;
+    margin-top: 2vh;
+}
+
+.banner-landscape {
+    width: 60vw;
+    height: auto;
+    margin-left: 5vw;
+    z-index: 5;
+}
+
+.buttons-container {
+    margin: 5px;
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    z-index: 1;
+}
+
+@media (orientation: landscape) {
+    .buttons-container  {
+        margin-left: 2vw;
+    }
+}
+
+@media (orientation: portrait) {
+    .buttons-container  {
+        width: 40vh;
+    }
+}
+
+.button {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin: auto;
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 0.35em;
+    max-width: 92%;
+    color: #636363;
+    background: #E8EAEF;
+    box-shadow: 3px 10px 30px -8px rgb(141 148 152 / 78%), -19px -1px 33px 11px #ffffff;
+    border-radius: 0.5em;
+}
+
+.button img {
+    width: 1.3em;
+}
+
+.button p {
+    text-decoration: none;
+    font-style: italic;
+    font-size: 20px;
+    text-align: center;
+    margin: 5px;
+    margin-left: 10px;
+}
+
+
+.logoAd {
+    height: 50px;
+    width: auto;
+    object-fit:cover;
+    cursor: pointer;
+    margin-top: 20px;
+    margin-right: auto;
+    margin-left: 10px;
+}
+
+.logoGG {
+    width: auto;
+    height: 50px;
+    object-fit:cover;
+    margin-left: 30px;
+    cursor: pointer;
+    pointer-events: all;
+    margin-top: 20px;
+    margin-bottom: auto;
+}
+
+
+@media (orientation: landscape) {
+    .logoGG {
+        margin-top: auto;
+        margin-bottom: 10px;
+    }
+}
+
+.logoGGvideo {
+    width: auto;
+    height: 40px;
+    object-fit:cover;
+    margin-left: 10px;
+    margin-top: auto;
+    margin-bottom: 20px;
+    cursor: pointer;
+}
+
+@media (orientation: landscape) {
+    .logoGGvideo {
+        margin-bottom: 20px;
+    }
+}
+
+.promo {
+    width: 25vh;
+    height: auto;
+    object-fit:cover;
+    margin: auto;
+    margin-top: 10px;
+}
+
+@media (orientation: landscape) {
+    .promo  {
+        width: 20vw;
+        margin-top: 10px;
+    }
+}
+
+.swipe {
+    width: auto;
+    height: 50px;
+    object-fit:cover;
+    margin-right: 40px;
+    margin-bottom: 25px;
+}
+
+@media (orientation: landscape) {
+    .swipe {
+        margin-bottom: 10px;
+        margin-right: 20px;
+    }
+}
