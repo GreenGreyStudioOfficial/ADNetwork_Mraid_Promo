@@ -124,7 +124,7 @@ function buildVideoPlayer(data,index) {
 
   // Info button
   let infoButtonView = createElement("img","infoButtonVideo");
-  infoButtonView.src = "info.png";
+  infoButtonView.src = "https://files.mobidriven.com/players/promo/images/info.png";
   infoButtonView.addEventListener("click", function(event) {
     clickAction(index, false);
   });
@@ -142,7 +142,7 @@ function buildVideoPlayer(data,index) {
 
   // Close button
   let closeButtonView = createElement("img","closeButtonVideo");
-  closeButtonView.src = "close_rect.png";
+  closeButtonView.src = "https://files.mobidriven.com/players/promo/images/close_rect.png";
   closeButtonView.addEventListener("click", function(event) {
     closeAction(index);
   });
@@ -154,7 +154,7 @@ function buildVideoPlayer(data,index) {
 
   // GG Logo
   let logo = createElement("img","logoGGvideo");
-  logo.src = "gg_black.png";
+  logo.src = "https://files.mobidriven.com/players/promo/images/gg_black.png";
   logo.addEventListener("click", function(event) {
     clickAction(index, false);
   });
@@ -163,7 +163,7 @@ function buildVideoPlayer(data,index) {
   // Swipe button
   if (index == 0) {
     let swipeButtonView = createElement("img","swipe");
-    swipeButtonView.src = "swipe.png";
+    swipeButtonView.src = "https://files.mobidriven.com/players/promo/images/swipe.png";
     bottomButtonsContainer.appendChild(swipeButtonView);
   }
     
@@ -202,10 +202,10 @@ function buildImageCard(data,index) {
 
   for (let i = 0; i < framesData.length; i++) {
     let dotView = createElement("img","dot",`d${i}`);
-    dotView.src = "dot.png";
+    dotView.src = "https://files.mobidriven.com/players/promo/images/dot.png";
     dotsView.appendChild(dotView);
     if (i === index) {
-      dotView.src = "dot_black.png";
+      dotView.src = "https://files.mobidriven.com/players/promo/images/dot_black.png";
     }
     dotView.style.marginRight = i < framesData.length-1 ? "10px" : "auto";
     dotView.style.marginLeft = i === framesData.length-1 ? 0 : "auto";
@@ -224,13 +224,13 @@ function buildImageCard(data,index) {
     var image = undefined;
     switch (ind) {
       case 0:
-        image = "call.png";
+        image = "https://files.mobidriven.com/players/promo/images/call.png";
         break;
       case 1:
-        image = "link.png";
+        image = "https://files.mobidriven.com/players/promo/images/link.png";
         break;
       case 2:
-        image = "download.png";
+        image = "https://files.mobidriven.com/players/promo/images/download.png";
         break;
       default:
         break;
@@ -277,7 +277,7 @@ function buildImageCard(data,index) {
   // GG Logo
   let logo = createElement("img","logoGG");
   logo.className = 'logoGG';
-  logo.src = "gg.png";
+  logo.src = "https://files.mobidriven.com/players/promo/images/gg.png";
   logo.addEventListener("click", function(event) {
     clickAction(index,false);
   });
@@ -288,7 +288,7 @@ function buildImageCard(data,index) {
 
   // Close button
   let closeButtonView = createElement("img","closeButtonBanner");
-  closeButtonView.src = "close.png";
+  closeButtonView.src = "https://files.mobidriven.com/players/promo/images/close.png";
   closeButtonView.addEventListener("click", function(event) {
     closeAction(index);
   });
@@ -297,7 +297,7 @@ function buildImageCard(data,index) {
   // Swipe button
   if (index == 0) {
     let swipeButtonView = createElement("img","swipe");
-    swipeButtonView.src = "swipe.png";
+    swipeButtonView.src = "https://files.mobidriven.com/players/promo/images/swipe.png";
     rightButtonsContainer.appendChild(swipeButtonView);
   }
 }
