@@ -3,7 +3,7 @@
      
      var STATES = mraid.STATES = {
          LOADING: 'loading',
-         READY: 'ready'
+         DEFAULT: 'default'
        };
 
      var version = '3.0';
@@ -66,6 +66,6 @@
          }
      }
      
-     mraid.setState(STATES.READY);
+     mraid.setState(STATES.DEFAULT);
      
  }());

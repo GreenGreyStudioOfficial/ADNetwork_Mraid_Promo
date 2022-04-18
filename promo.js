@@ -11,7 +11,7 @@ var visibleFrameIndex = -1;
 var players = [];
 
 function doMraidReadyCheck(){
-    if (mraid.getState() == 'ready') {
+    if (mraid.getState() == 'default') {
         buildUI();
     }
 }
@@ -36,12 +36,6 @@ function addMraidEventListeners() {
             updatePlayer();
         }
     });
-}
-
-function refreshUI() {
-  let evt = window.document.createEvent('UIEvents');
-  evt.initUIEvent('resize', true, true, window, 0);
-  window.dispatchEvent(evt);
 }
 
 function createElement(tag, className, idName) {
