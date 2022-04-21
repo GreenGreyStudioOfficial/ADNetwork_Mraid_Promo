@@ -2,70 +2,73 @@
      var mraid = window.mraid = {};
      
      var STATES = mraid.STATES = {
-         LOADING: 'loading',
-         DEFAULT: 'default'
-       };
+        LOADING: 'loading',
+        DEFAULT: 'default',
+        HIDDEN: 'hidden'
+     };
 
      var version = '3.0';
      var state = STATES.LOADING;
-     mraid.debug = false;
      
      var screenSize = { width:0, height:0 };
-     mraid.bigScreen = false;
-     mraid.landscapeMode = false;
      mraid.isViewable = true;
 
      mraid.getVersion = function() {
-         log('getVersion (version = ' + version + ")");
+         //console.log('getVersion (version = ' + version + ")");
          return version;
      };
      
      mraid.getState = function(){
-         log('getState (state = ' + state + ")");
+         //console.log('getState (state = ' + state + ")");
          return state;
+    }
+     
+     mraid.setState = function(toState){
+         console.log("setState (" + toState + ")" );
+         if(state != toState){
+             state = toState;
+             document.dispatchEvent(new CustomEvent("mraidEvent", {bubbles: true,detail:{type: "stateChange"}}));
+             if (state === STATES.DEFAULT) {
+                 document.dispatchEvent(new CustomEvent("mraidEvent", {bubbles: true,detail:{type: "ready"}}));
+             }
+         }
     }
      
      mraid.getScreenSize = function(){
          return screenSize;
      }
      
-     mraid.setScreenSize = function(width,height,bigScreen){
+     mraid.setScreenSize = function(width,height){
          screenSize.width = width;
          screenSize.height = height;
-         
-         mraid.bigScreen = bigScreen;
-         mraid.landscapeMode = width > height;
-         
-         log("setScreenSize: " + "w: " + width + ", h: " + height + ", big: " + bigScreen);
-         
-         document.dispatchEvent(new CustomEvent("mraidEvent", {bubbles: true,detail:{type: "resizeChangeEvent"}}));
+         //console.log("setScreenSize: " + "w: " + width + ", h: " + height);
+         document.dispatchEvent(new CustomEvent("mraidEvent", {bubbles: true,detail:{type: "sizeChange"}}));
      }
      
-     mraid.setViewable = function(viewable){
+     mraid.setExposure = function(viewable){
          mraid.isViewable = viewable;
-         log("setViewable: " + viewable);
-         document.dispatchEvent(new CustomEvent("mraidEvent", {bubbles: true,detail:{type: "viewableChangeEvent"}}));
+         //console.log("setViewable: " + viewable);
+         document.dispatchEvent(new CustomEvent("mraidEvent", {bubbles: true,detail:{type: "exposureChange"}}));
      }
 
-     mraid.invokeSDK = function (event) {
-         //log(event);
-         window.webkit.messageHandlers.nativeapp.postMessage(event);
+     
+     mraid.close = function() {
+         mraid.setState(STATES.HIDDEN);
+         window.webkit.messageHandlers.nativeapp.postMessage({"type":"close"});
      }
      
-     mraid.setState = function(toState){
-             log("setState (" + toState + ")" );
-             if(state != toState){
-                 state = toState;
-                 document.dispatchEvent(new CustomEvent("mraidEvent", {bubbles: true,detail:{type: "stateChangeEvent"}}));
-             }
-         }
-     
-     function log(str){
-         if(mraid.debug){
-             console.log('mraid.js::' + str);
-         }
+     mraid.unload = function() {
+         mraid.setState(STATES.HIDDEN);
+         window.webkit.messageHandlers.nativeapp.postMessage({"type":"close"});
      }
      
-     mraid.setState(STATES.DEFAULT);
+     mraid.open = function(url) {
+         let eventType = url.startsWith("tel://") ? "call" : "click";
+         window.webkit.messageHandlers.nativeapp.postMessage({"type":eventType, "value":url});
+     }
+     
+     mraid.storePicture = function(url){
+         window.webkit.messageHandlers.nativeapp.postMessage({"type":"save", "value":url});
+     }
      
  }());

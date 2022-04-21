@@ -7,8 +7,9 @@
 var swipeViewId = "swipeView";
 var framesData = [];
 var visibleFrameIndex = -1;
-
 var players = [];
+var bigScreen = false;
+var landscapeMode = false;
 
 function doMraidReadyCheck(){
     if (mraid.getState() == 'default') {
@@ -16,9 +17,9 @@ function doMraidReadyCheck(){
     }
 }
 
-
-function initPromoApp() {
+function initPromoApp(isBigScreen) {
     console.log('Promo app started');
+    bigScreen = isBigScreen;
     framesData = data.frames;
     addMraidEventListeners();
     doMraidReadyCheck();
@@ -26,14 +27,14 @@ function initPromoApp() {
 
 function addMraidEventListeners() {
     document.addEventListener("mraidEvent", function(ev) {
-        if (ev.detail.type === "stateChangeEvent") {
-            doMraidReadyCheck();
-        }
-        else if (ev.detail.type === "resizeChangeEvent") {
+        if (ev.detail.type === "sizeChange") {
             updateUI();
         }
-        else if (ev.detail.type === "viewableChangeEvent") {
+        else if (ev.detail.type === "exposureChange") {
             updatePlayer();
+        }
+        else if (ev.detail.type === "ready") {
+            doMraidReadyCheck();
         }
     });
 }
@@ -47,6 +48,7 @@ function createElement(tag, className, idName) {
 
 // Build UI
 function buildUI() {
+    console.log("buildUI")
   let promo = document.getElementById('promo');
   let container = createElement("div",undefined, "container");
   promo.appendChild(container);
@@ -92,7 +94,7 @@ function buildVideoPlayer(data,index) {
   let frameView = createElement("div","frameView",`${index}`);
   document.getElementById(swipeViewId).appendChild(frameView);
 
-  let player = new Player(frameView.id, data, mraid.landscapeMode);
+  let player = new Player(frameView.id, data, landscapeMode);
   players.push(player);
 
   document.addEventListener("playBackEvent", function(ev) {
@@ -104,7 +106,7 @@ function buildVideoPlayer(data,index) {
         event.urls.push(evtr.url);
       }
     })
-    mraid.invokeSDK(event);
+    fireEvent(event);
   });
 
   let overlayView = createElement("div","overlayView");
@@ -171,17 +173,17 @@ function buildImageCard(data,index) {
   let wrapperView = createElement("div","imageСard");
   frameView.appendChild(wrapperView);
 
-  var classToAdd = mraid.landscapeMode ? 'imageСard-landscape' : 'imageСard-portrait';
+  var classToAdd = landscapeMode ? 'imageСard-landscape' : 'imageСard-portrait';
   wrapperView.classList.add(classToAdd);
 
   let bannerWrapper = createElement("div","bannerWrapper");
-  let styleClass = mraid.landscapeMode ? "banner-landscape" : "banner-portrait";
+  let styleClass = landscapeMode ? "banner-landscape" : "banner-portrait";
   bannerWrapper.classList.add(styleClass);
   wrapperView.appendChild(bannerWrapper);
 
   // Banner
   let banner = createElement("img","banner");
-  banner.src = mraid.landscapeMode ?  data.imageLandscapeUrl : data.imagePortraitUrl;
+  banner.src = landscapeMode ?  data.imageLandscapeUrl : data.imagePortraitUrl;
   banner.addEventListener("click", function(event) {
     clickAction(index, false);
   });
@@ -350,51 +352,53 @@ function updatePlayer(){
 
 // Update UI on orientaion change
 function updateUI() {
-    //console.log("updateUI. landscapeMode: " + mraid.landscapeMode);
-  // Image frames
-  let imageFrames = document.getElementsByClassName('imageСard');
-  if (!imageFrames || imageFrames.length === 0) {return}
-  var classToRemove = mraid.landscapeMode ? 'imageСard-portrait' : 'imageСard-landscape';
-  var classToAdd = mraid.landscapeMode ? 'imageСard-landscape' : 'imageСard-portrait';
-  Array.prototype.forEach.call(imageFrames, function(frame) {
-    frame.classList.remove(classToRemove);
-    frame.classList.add(classToAdd);
+    let size = mraid.getScreenSize();
+    landscapeMode = size.width > size.height;
+    //console.log("updateUI. landscapeMode: " + landscapeMode);
+    // Image frames
+    let imageFrames = document.getElementsByClassName('imageСard');
+    if (!imageFrames || imageFrames.length === 0) {return}
+    var classToRemove = landscapeMode ? 'imageСard-portrait' : 'imageСard-landscape';
+    var classToAdd = landscapeMode ? 'imageСard-landscape' : 'imageСard-portrait';
+    Array.prototype.forEach.call(imageFrames, function(frame) {
+        frame.classList.remove(classToRemove);
+        frame.classList.add(classToAdd);
 
-    // Update banner image
-    let banner = frame.getElementsByClassName('banner')[0];
-    if (banner) {
-      let class_ToRemove = mraid.landscapeMode ? 'banner-portrait' : 'banner-landscape';
-      let class_ToAdd = mraid.landscapeMode ? 'banner-landscape' : 'banner-portrait';
-      banner.parentElement.classList.remove(class_ToRemove);
-      banner.parentElement.classList.add(class_ToAdd);
+        // Update banner image
+        let banner = frame.getElementsByClassName('banner')[0];
+        if (banner) {
+          let class_ToRemove = landscapeMode ? 'banner-portrait' : 'banner-landscape';
+          let class_ToAdd = landscapeMode ? 'banner-landscape' : 'banner-portrait';
+          banner.parentElement.classList.remove(class_ToRemove);
+          banner.parentElement.classList.add(class_ToAdd);
 
-      let imgSrc = mraid.landscapeMode ? 'imageLandscapeUrl' : 'imagePortraitUrl';
-      let frameData = framesData[parseInt(frame.parentElement.id)];
-      banner.src = frameData[imgSrc];
-    }
+          let imgSrc = landscapeMode ? 'imageLandscapeUrl' : 'imagePortraitUrl';
+          let frameData = framesData[parseInt(frame.parentElement.id)];
+          banner.src = frameData[imgSrc];
+        }
   })
 
   // Update GG logo position
   Array.prototype.forEach.call(document.getElementsByClassName('logoGG'), function(element) {
-    classToRemove = mraid.landscapeMode ? 'logoGG-portrait' : 'logoGG-landscape';
-    classToAdd = mraid.landscapeMode ? 'logoGG-landscape' : 'logoGG-portrait';
+    classToRemove = landscapeMode ? 'logoGG-portrait' : 'logoGG-landscape';
+    classToAdd = landscapeMode ? 'logoGG-landscape' : 'logoGG-portrait';
       element.classList.remove(classToRemove);
       element.classList.add(classToAdd);
   });
     
     // Update swipe image position
     Array.prototype.forEach.call(document.getElementsByClassName('swipe'), function(element) {
-        element.style.marginBottom = (mraid.bigScreen && !mraid.landscapeMode) ? "65px" : "25px";
+        element.style.marginBottom = (bigScreen && !landscapeMode) ? "65px" : "25px";
     });
     
     // Update GG logo video image position
     Array.prototype.forEach.call(document.getElementsByClassName('logoGGvideo'), function(elem) {
-        elem.style.marginBottom = (mraid.bigScreen && !mraid.landscapeMode) ? "70px" : "25px";
+        elem.style.marginBottom = (bigScreen && !landscapeMode) ? "70px" : "25px";
     });
 
   // Update video frames
   players.forEach(function (player){
-    player.update(mraid.landscapeMode);
+    player.update(landscapeMode);
   })
 
 }
@@ -417,7 +421,7 @@ function startAction(index) {
       event.urls.push(ev.url);
     }
   })
-  mraid.invokeSDK(event);
+  fireEvent(event);
   setTimeout(impressionAction, frameData.impTrackingTimeout, frameData.impTracking);
 }
 
@@ -425,7 +429,7 @@ const impressionAction = urls => {
   var event = {};
   event.type = "impression";
   event.urls = urls;
-  mraid.invokeSDK(event);
+  fireEvent(event);
 };
 
 
@@ -447,7 +451,7 @@ function closeAction(index) {
         })
     }
     
-  mraid.invokeSDK(event);
+  fireEvent(event);
 }
 
 function clickAction(index, buttonClick) {
@@ -460,7 +464,7 @@ function clickAction(index, buttonClick) {
   frameData.clickTracking.forEach(function (clickUrl){
       event.urls.push(clickUrl);
   })
-  mraid.invokeSDK(event);
+  fireEvent(event);
 }
 
 function callAction(index) {
@@ -468,7 +472,7 @@ function callAction(index) {
   var event = {};
   event.type = "call";
   event.value = frameData.buttonCallPhone;
-  mraid.invokeSDK(event);
+  fireEvent(event);
 }
 
 function saveAction(index) {
@@ -476,6 +480,57 @@ function saveAction(index) {
   var event = {};
   event.type = "save";
   event.value = frameData.buttonStoreUrl;
-    console.log(frameData.buttonStoreUrl);
-  mraid.invokeSDK(event);
+  fireEvent(event);
+}
+
+function fireEvent(event) {
+    console.log("EVENT: " + event.type);
+    if (event.urls && event.urls.length>0){
+        pushToServer(event.urls)
+    }
+    
+    if (event.type === "close") {
+        mraid.close();
+        return;
+    }
+    
+    if (!event.value){return}
+    //console.log("Implement in MRAID:: " + event.type + ": " + event.value);
+    switch (event.type) {
+        case "click":
+            mraid.open(event.value);
+            break;
+        case "save":
+            mraid.storePicture(event.value)
+            break;
+        case "call":
+            let numberUrl = "tel://" + event.value.replace(/\D/g,'');
+            mraid.open(numberUrl);
+            break;
+        default:
+            break;
+    }
+}
+
+function pushToServer(urls) {
+    urls.forEach(function (url){
+        send(url);
+    })
+}
+
+function send(url) {
+    let xhr = new XMLHttpRequest();
+    xhr.open("GET", url);
+    xhr.send();
+    xhr.onload = function() {
+        if (xhr.status != 200) {
+            console.log(`Failed send pixel: ${xhr.status}, ${xhr.statusText}`);
+        } else {
+            //console.log("Send pixel - OK, URL: " + url);
+        }
+    };
+
+    xhr.onerror = function() {
+        console.log("Failed send pixel");
+    };
 }
