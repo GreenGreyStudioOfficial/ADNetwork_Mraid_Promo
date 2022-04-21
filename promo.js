@@ -490,7 +490,7 @@ function fireEvent(event) {
     }
     
     if (event.type === "close") {
-        mraid.close();
+        mraid.unload();
         return;
     }
     
