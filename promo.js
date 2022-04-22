@@ -8,7 +8,7 @@ var swipeViewId = "swipeView";
 var framesData = [];
 var visibleFrameIndex = -1;
 var players = [];
-var bigScreen = false;
+var bigScreen = true;
 var landscapeMode = false;
 
 function doMraidReadyCheck(){
@@ -19,7 +19,9 @@ function doMraidReadyCheck(){
 
 function initPromoApp(isBigScreen) {
     console.log('Promo app started');
-    bigScreen = isBigScreen;
+    if (isBigScreen) {
+        bigScreen = isBigScreen;
+    }
     framesData = data.frames;
     addMraidEventListeners();
     doMraidReadyCheck();
