@@ -13,7 +13,7 @@ var landscapeMode = false;
 
 function doMraidReadyCheck(){
     if (mraid.getState() == 'default') {
-        buildUI();
+        showMyAd();
     }
 }
 
@@ -49,14 +49,13 @@ function createElement(tag, className, idName) {
 }
 
 // Build UI
-function buildUI() {
-    console.log("buildUI")
+function showMyAd() {
   let promo = document.getElementById('promo');
   let container = createElement("div",undefined, "container");
   promo.appendChild(container);
 
   let swipeView = createElement("div","swipeView", swipeViewId);
-    swipeView.style.gridTemplateColumns = `repeat(${framesData.length}, 100%)`;
+  swipeView.style.gridTemplateColumns = `repeat(${framesData.length}, 100%)`;
   promo.appendChild(swipeView);
 
    if (framesData) {
@@ -354,6 +353,8 @@ function updatePlayer(){
 
 // Update UI on orientaion change
 function updateUI() {
+    if (document.getElementById(swipeViewId) == undefined) {return}
+    
     let size = mraid.getScreenSize();
     landscapeMode = size.width > size.height;
     //console.log("updateUI. landscapeMode: " + landscapeMode);
