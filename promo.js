@@ -214,9 +214,13 @@ function buildImageCard(data,index) {
   let buttonsContainer = createElement("div","buttons-container");
   wrapperView.appendChild(buttonsContainer);
 
-  createButton("Позвонить", 0);
-  createButton("Перейти", 1);
-  createButton("Сохранить", 2);
+    if (mraid.supports("tel")){
+        createButton("Позвонить", 0);
+    }
+    createButton("Перейти", 1);
+    if (mraid.supports("storePicture")){
+        createButton("Сохранить", 2);
+    }
 
 
   function createButton(title, ind) {

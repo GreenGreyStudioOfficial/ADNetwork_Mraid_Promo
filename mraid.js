@@ -21,12 +21,21 @@
          INLINE : "inline",
          INTERSTITIAL : "interstitial"
      };
+     
+     var FEATURES = mraid.FEATURES = {
+         "SMS" : "sms",
+         "TEL" : "tel",
+         "STORE_PICTURE" : "storePicture",
+         "INLINE_VIDEO" : "inlineVideo",
+         "CALENDAR" : "calendar"
+     };
 
      var version = '3.0';
      var state = STATES.LOADING;
      var placementType = PLACEMENTS.INTERSTITIAL;
      var listeners = [];
      var screenSize = { width:0, height:0 };
+     var supportedFeatures = [];
      mraid.isViewable = true;
 
      mraid.getVersion = function() {
@@ -86,6 +95,19 @@
             console.log('setPlacementType: ' + type);
             placementType = type;
         }
+     }
+     
+     // ------------------------------------------------------------------------------
+     //                      Support for features
+     // ------------------------------------------------------------------------------
+     mraid.setSupports = function(feature, isSupported){
+         console.log("set feature " + feature + " " + isSupported);
+         supportedFeatures[feature] = isSupported;
+     }
+     
+     mraid.supports = function(feature){
+         console.log('supports - ' + feature + ' : ' + (supportedFeatures[feature] === true));
+         return supportedFeatures[feature]=== true;
      }
      
      // ------------------------------------------------------------------------------
