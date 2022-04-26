@@ -12,9 +12,19 @@ var bigScreen = true;
 var landscapeMode = false;
 
 function doMraidReadyCheck(){
-    if (mraid.getState() == 'default') {
+    if (mraid.getState() == 'loading') {
+        mraid.addEventListener("ready", mraidIsReady);
+    }
+    else {
         showMyAd();
     }
+}
+
+function mraidIsReady()
+{
+    console.log("mraidIsReady!")
+    mraid.removeEventListener("ready", mraidIsReady);
+    showMyAd();
 }
 
 function initPromoApp(isBigScreen) {
@@ -23,22 +33,15 @@ function initPromoApp(isBigScreen) {
         bigScreen = isBigScreen;
     }
     framesData = data.frames;
-    addMraidEventListeners();
     doMraidReadyCheck();
 }
 
 function addMraidEventListeners() {
-    document.addEventListener("mraidEvent", function(ev) {
-        if (ev.detail.type === "sizeChange") {
-            updateUI();
-        }
-        else if (ev.detail.type === "exposureChange") {
-            updatePlayer();
-        }
-        else if (ev.detail.type === "ready") {
-            doMraidReadyCheck();
-        }
-    });
+    //mraid.addEventListener("stateChange", stateChangeHandler);
+    mraid.addEventListener("sizeChange", updateUI);
+    mraid.addEventListener("orientationChange", updateUI);
+    mraid.addEventListener("viewableChange", updatePlayer);
+    mraid.addEventListener("exposureChange", updatePlayer);
 }
 
 function createElement(tag, className, idName) {
@@ -50,17 +53,19 @@ function createElement(tag, className, idName) {
 
 // Build UI
 function showMyAd() {
-  let promo = document.getElementById('promo');
-  let container = createElement("div",undefined, "container");
-  promo.appendChild(container);
+    addMraidEventListeners();
+        
+    let promo = document.getElementById('promo');
+    let container = createElement("div",undefined, "container");
+    promo.appendChild(container);
 
-  let swipeView = createElement("div","swipeView", swipeViewId);
-  swipeView.style.gridTemplateColumns = `repeat(${framesData.length}, 100%)`;
-  promo.appendChild(swipeView);
+    let swipeView = createElement("div","swipeView", swipeViewId);
+    swipeView.style.gridTemplateColumns = `repeat(${framesData.length}, 100%)`;
+    promo.appendChild(swipeView);
 
-   if (framesData) {
+    if (framesData) {
        buildFrames();
-   }
+    }
     updateUI();
 }
 

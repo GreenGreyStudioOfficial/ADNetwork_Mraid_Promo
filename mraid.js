@@ -13,6 +13,7 @@
          READY: 'ready',
          STATECHANGE: 'stateChange',
          VIEWABLECHANGE: 'viewableChange',
+         EXPOSURECHANGE: "exposureChange",
          SIZECHANGE: 'sizeChange'
        };
      
@@ -46,10 +47,7 @@
          console.log("setState (" + toState + ")" );
          if(state != toState){
              state = toState;
-             document.dispatchEvent(new CustomEvent("mraidEvent", {bubbles: true,detail:{type: "stateChange"}}));
-             if (state === STATES.DEFAULT) {
-                 document.dispatchEvent(new CustomEvent("mraidEvent", {bubbles: true,detail:{type: "ready"}}));
-             }
+             mraid.fireEvent(EVENTS.STATECHANGE)
          }
     }
      
@@ -65,13 +63,13 @@
          screenSize.width = width;
          screenSize.height = height;
          console.log("setScreenSize: " + "w: " + width + ", h: " + height);
-         document.dispatchEvent(new CustomEvent("mraidEvent", {bubbles: true,detail:{type: "sizeChange"}}));
+         mraid.fireEvent(EVENTS.SIZECHANGE)
      }
      
      mraid.setExposure = function(viewable){
          mraid.isViewable = viewable;
-         console.log("setViewable: " + viewable);
-         document.dispatchEvent(new CustomEvent("mraidEvent", {bubbles: true,detail:{type: "exposureChange"}}));
+         console.log("setExposure: " + viewable);
+         mraid.fireEvent(EVENTS.EXPOSURECHANGE)
      }
      
      // ------------------------------------------------------------------------------
@@ -94,6 +92,13 @@
      //                      Event Listeners
      // ------------------------------------------------------------------------------
      
+     mraid.fireEvent = function(event){
+         console.log("fire event (" + event + ")");
+         if(listeners.containsEvent(event)){
+             listeners.invoke(event);
+         }
+     }
+     
      mraid.addEventListener = function(event, listener){
          if(listeners.containsListener(event, listener)){
              console.log('addEventListener - this function already registered for (' + event + ') event.');
@@ -106,6 +111,47 @@
 
      mraid.removeEventListener = function(event, listener){
          listeners.removeListener(event, listener);
+     }
+     
+     
+     listeners.invoke = function(event){
+         listeners[event].forEach(function(listener){
+             listener();
+         });
+     }
+
+     listeners.containsEvent = function(event){
+         return Array.isArray(listeners[event]);
+     }
+
+     listeners.containsListener = function(event, listener){
+         var listenerString = String(listener);
+         if(Array.isArray(listeners[event])){
+             listeners[event].forEach(function(listener){
+                 var thisStr = String(listener);
+                 if(thisStr === listenerString){
+                     return true;
+                 }
+             });
+         }
+         return false;
+     }
+
+     listeners.removeListener = function(event, listener){
+         var listenerString = String(listener);
+         var index = -1;
+         if(Array.isArray(listeners[event])){
+             listeners[event].forEach(function(listener){
+                 var thisStr = String(listener);
+                 if(thisStr === listenerString){
+                     console.log("removing event listener (" + event + ")");
+                     index = listeners[event].indexOf(listener);
+                 }
+             });
+         }
+         if(index > 0){
+             listeners[event].splice(index, 1);
+         }
      }
 
     // ------------------------------------------------------------------------------
