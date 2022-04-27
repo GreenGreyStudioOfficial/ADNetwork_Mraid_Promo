@@ -77,7 +77,7 @@ function buildFrames() {
     
     if (!mraid.isViewable) {
         mraid.addEventListener("viewableChange", function onVisible(){
-            if (mraid.isViewable) {
+            if (mraid.isViewable == true) {
                 mraid.removeEventListener("viewableChange", onVisible);
                 startAction(0);
                 updatePlayer();
@@ -363,7 +363,7 @@ function updateOnSwipe() {
 function updatePlayer(){
     let videoView = document.getElementById(`video-${visibleFrameIndex}`);
     if (videoView && isInViewport(videoView)){
-        if (mraid.isViewable) {
+        if (mraid.isViewable == true) {
           if (videoView.paused || videoView.ended) {
               videoView.play();
           }
