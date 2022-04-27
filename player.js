@@ -29,6 +29,7 @@ class Player {
     videoView.playsinline = true;
     videoView.webkitPlaysinline = true;
     videoView.controls = false;
+    videoView.pause();
 
     videoView.setAttribute('playsinline',"playsinline");
     container.appendChild(videoView);

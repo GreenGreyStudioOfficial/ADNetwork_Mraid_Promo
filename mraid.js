@@ -36,7 +36,7 @@
      var listeners = [];
      var screenSize = { width:0, height:0 };
      var supportedFeatures = [];
-     mraid.isViewable = true;
+     mraid.isViewable = false;
 
      mraid.getVersion = function() {
          console.log('getVersion (version = ' + version + ")");
@@ -73,6 +73,12 @@
          screenSize.height = height;
          console.log("setScreenSize: " + "w: " + width + ", h: " + height);
          mraid.fireEvent(EVENTS.SIZECHANGE)
+     }
+     
+     mraid.viewableChange = function(viewable){
+         mraid.isViewable = viewable;
+         console.log("viewableChange: " + viewable);
+         mraid.fireEvent(EVENTS.VIEWABLECHANGE)
      }
      
      mraid.setExposure = function(viewable){

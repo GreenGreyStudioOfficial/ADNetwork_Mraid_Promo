@@ -71,14 +71,27 @@ function showMyAd() {
 
 
 function buildFrames() {
-  framesData.forEach(function (frameData, index){
-    buildFrame(frameData,index);
-  })
-  startAction(0);
+    framesData.forEach(function (frameData, index){
+        buildFrame(frameData,index);
+    })
+    
+    if (!mraid.isViewable) {
+        mraid.addEventListener("viewableChange", function onVisible(){
+            if (mraid.isViewable) {
+                mraid.removeEventListener("viewableChange", onVisible);
+                startAction(0);
+                updatePlayer();
+            }
+        });
+    }
+    else {
+        startAction(0);
+        updatePlayer();
+    }
 
-  document.getElementById(swipeViewId).addEventListener('scroll', function() {
-   updateOnSwipe();
-  });
+    document.getElementById(swipeViewId).addEventListener('scroll', function() {
+        updateOnSwipe();
+    });
 
 }
 
@@ -160,7 +173,7 @@ function buildVideoPlayer(data,index) {
   bottomButtonsContainer.appendChild(logo);
 
   // Swipe button
-  if (index == 0) {
+  if (index === 0) {
     let swipeButtonView = createElement("img","swipe");
     swipeButtonView.src = "https://files.mobidriven.com/players/promo/images/swipe.png";
     bottomButtonsContainer.appendChild(swipeButtonView);
@@ -352,7 +365,11 @@ function updatePlayer(){
     if (videoView && isInViewport(videoView)){
         if (mraid.isViewable) {
           if (videoView.paused || videoView.ended) {
-            videoView.play();}
+              videoView.play();
+          }
+          else {
+              videoView.pause();
+          }
         }
         else {
             videoView.pause();
@@ -418,23 +435,25 @@ function updateUI() {
 // Actions
 
 function startAction(index) {
-  var frameData = framesData[index];
-  if (frameData["started"] === true) {
-    return;
-  }
-  frameData["started"] = true;
-  framesData[index] = frameData;
-
-  var event = {};
-  event.type = "start";
-  event.urls = [];
-  frameData.eventTracking.forEach(function (ev){
-    if (ev.event === event.type) {
-      event.urls.push(ev.url);
+    if (!mraid.isViewable) {return;}
+    
+    var frameData = framesData[index];
+    if (frameData["started"] === true) {
+        return;
     }
-  })
-  fireEvent(event);
-  setTimeout(impressionAction, frameData.impTrackingTimeout, frameData.impTracking);
+    frameData["started"] = true;
+    framesData[index] = frameData;
+
+    var event = {};
+    event.type = "start";
+    event.urls = [];
+    frameData.eventTracking.forEach(function (ev){
+        if (ev.event === event.type) {
+            event.urls.push(ev.url);
+        }
+    })
+    fireEvent(event);
+    setTimeout(impressionAction, frameData.impTrackingTimeout, frameData.impTracking);
 }
 
 const impressionAction = urls => {
