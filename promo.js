@@ -2,6 +2,22 @@
  * promo.js
 */
 
+// ERROR EVENT LISTENER
+(function(){
+    window.addEventListener("error", function(m){
+        console.log(m);
+        var r = new XMLHttpRequest();
+        var url = "https://sp-01.mobidriven.com/mraid_error";
+        url += "?msg=" + encodeURIComponent(m.message);
+        url += "&file=" + encodeURIComponent(m.filename);
+        url += "&line=" + encodeURIComponent(m.lineno);
+        url += "&col=" + encodeURIComponent(m.colno);
+        url += "&trace=" + encodeURIComponent(m.error.stack);
+        r.open("GET", url, true);
+        r.setRequestHeader("Content-Type", "application/json");
+        r.send();
+    }, false);
+})();
 
 
 var swipeViewId = "swipeView";
@@ -75,9 +91,9 @@ function buildFrames() {
         buildFrame(frameData,index);
     })
     
-    if (!mraid.isViewable) {
+    if (!mraid.isViewable()) {
         mraid.addEventListener("viewableChange", function onVisible(){
-            if (mraid.isViewable == true) {
+            if (mraid.isViewable() == true) {
                 mraid.removeEventListener("viewableChange", onVisible);
                 startAction(0);
                 updatePlayer();
@@ -227,11 +243,11 @@ function buildImageCard(data,index) {
   let buttonsContainer = createElement("div","buttons-container");
   wrapperView.appendChild(buttonsContainer);
 
-    if (mraid.supports("tel")){
+    if (mraid.supports && mraid.supports("tel")){
         createButton("Позвонить", 0);
     }
     createButton("Перейти", 1);
-    if (mraid.supports("storePicture")){
+    if (mraid.supports && mraid.supports("storePicture")){
         createButton("Сохранить", 2);
     }
 
@@ -363,7 +379,7 @@ function updateOnSwipe() {
 function updatePlayer(){
     let videoView = document.getElementById(`video-${visibleFrameIndex}`);
     if (videoView && isInViewport(videoView)){
-        if (mraid.isViewable == true) {
+        if (mraid.isViewable() == true) {
           if (videoView.paused || videoView.ended) {
               videoView.play();
           }
@@ -435,7 +451,7 @@ function updateUI() {
 // Actions
 
 function startAction(index) {
-    if (!mraid.isViewable) {return;}
+    if (!mraid.isViewable()) {return;}
     
     var frameData = framesData[index];
     if (frameData["started"] === true) {

@@ -36,7 +36,11 @@
      var listeners = [];
      var screenSize = { width:0, height:0 };
      var supportedFeatures = [];
-     mraid.isViewable = false;
+     
+     var viewable = false;
+     mraid.isViewable = function() {
+         return viewable;
+     };
 
      mraid.getVersion = function() {
          console.log('getVersion (version = ' + version + ")");
@@ -75,14 +79,14 @@
          mraid.fireEvent(EVENTS.SIZECHANGE)
      }
      
-     mraid.viewableChange = function(viewable){
-         mraid.isViewable = viewable;
+     mraid.viewableChange = function(_viewable){
+         viewable = _viewable;
          console.log("viewableChange: " + viewable);
          mraid.fireEvent(EVENTS.VIEWABLECHANGE)
      }
      
-     mraid.setExposure = function(viewable){
-         mraid.isViewable = viewable;
+     mraid.setExposure = function(_viewable){
+         viewable = _viewable;
          console.log("setExposure: " + viewable);
          mraid.fireEvent(EVENTS.EXPOSURECHANGE)
      }
