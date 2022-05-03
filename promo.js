@@ -2,6 +2,177 @@
  * promo.js
 */
 
+function ProcessUrl(id, url,onComplete) {
+    var http = new XMLHttpRequest();
+    http.open('GET', url);
+    http.responseType = 'blob';
+    
+    /*
+    http.onreadystatechange = function() {
+        if (http.readyState == 4){
+            if (event.target.status == 200 || event.target.status == 0) {
+                console.log("BANANA: " + http.status);
+                var blob = this.response;//new Blob(this.response,{type: 'image/png'});
+                var localUrl = URL.createObjectURL(this.response);
+                console.log("onreadystatechange. ID: " + id + ", localUrl: " + localUrl);
+                
+            }
+        }
+    };
+    */
+    
+    http.onload = function() {
+        if (this.status === 200|| this.status == 0) {
+            const localUrl = URL.createObjectURL(this.response);
+            //console.log("onload. ID: " + id + ", localUrl: " + localUrl);
+            onComplete(id, localUrl);
+        }
+    }
+    
+    http.onerror = function() {
+        console.log('err' ,arguments);
+    }
+    http.send();
+}
+
+// Media cache
+function MediaCache(frames) {
+    this.data = {};
+    this.requests = new Array();
+    
+    frames.forEach(function (frame){
+        switch (frame.type) {
+          case "VideoPlayer":
+                processVideoFrameData(frame);
+                break;
+          case "ImageCard":
+                //processImageFrameData(frame);
+                break;
+          default:
+                break;
+        }
+    })
+    
+    function processVideoFrameData(frame) {
+        if (frame.videoPortraitFileId && frame.videoPortraitUrl) {
+            queueMedia(frame.videoPortraitFileId, frame.videoPortraitUrl);
+        }
+        if (frame.videoLandscapeFileId && frame.videoLandscapeUrl) {
+            queueMedia(frame.videoLandscapeFileId, frame.videoLandscapeUrl);
+        }
+        //if (frame.logoImageFileId && frame.videoPortraitUrl) {
+        //    queueMedia(frame.logoImageFileId, frame.logoImageUrl);
+        //}
+    }
+    
+    function processImageFrameData(frame) {
+        if (frame.imagePortraitFileId && frame.imagePortraitUrl) {
+            queueMedia(frame.imagePortraitFileId, frame.imagePortraitUrl);
+        }
+        if (frame.imageLandscapeFileId && frame.imageLandscapeUrl) {
+            queueMedia(frame.imageLandscapeFileId, frame.imageLandscapeUrl);
+        }
+        if (frame.buttonStoreFileId && frame.buttonStoreUrl) {
+            queueMedia(frame.buttonStoreFileId, frame.buttonStoreUrl);
+        }
+    }
+    
+    function queueMedia(id, url) {
+        console.log("Download media. ID: " + id + ", URL: " + url);
+        
+        let that = this;
+         this.requests.push(new ProcessUrl(id,url, function onComplete(id, localUrl) {
+             console.log("Downloaded. ID: " + id + ", localUrl: " + localUrl);
+             that.data[id] = localUrl;
+         }))
+         
+    }
+}
+
+// Video player
+function Player (containerId, data, landscapeMode){
+    //console.log("Player in container: " + containerId);
+    
+    this.currentTime = undefined;
+    this.videoDuration = undefined;
+    this.landscapeMode = landscapeMode;
+    this.firstQuartile = undefined;
+    this.midpoint = undefined;
+    this.thirdQuartile = undefined;
+    this.complete = undefined;
+    this.data = data;
+    this.containerId = containerId;
+    
+    let container = document.getElementById(containerId);
+    let inline = "?playsinline=1";
+    let videoFile = landscapeMode ? data.videoLandscapeUrl+inline : data.videoPortraitUrl+inline;
+    let video = document.createElement("video");
+    video.className = "videoView";
+    video.id = `video-${containerId}`;
+    video.src = videoFile;
+    video.autoplay = containerId == "0";
+    video.muted = false;
+    video.playsinline = true;
+    video.webkitPlaysinline = true;
+    video.controls = false;
+    video.preload = "metadata";
+    video.pause();
+    video.setAttribute('playsinline',"playsinline");
+    container.appendChild(video);
+
+    let that = this;
+    video.onloadedmetadata = function() {
+        console.log("video.onloadedmetadata");
+        that.videoDuration = Math.round(this.duration);
+        this.currentTime = that.currentTime ? that.currentTime : 0;
+    }
+      
+    //video.onloadeddata = function(){
+    //  console.log("video.onloadeddata");
+    //}
+
+    video.addEventListener("click", function(event) {
+      this.muted = !this.muted;
+    });
+
+    video.addEventListener('timeupdate', function(event) {
+      that.currentTime = this.currentTime;
+      const progress = Math.round(this.currentTime/that.videoDuration*100)/100;
+
+      if (!that.firstQuartile && (progress >= 0.24 && progress <= 0.26)) {
+        that.firstQuartile = progress;
+        this.dispatchEvent(new CustomEvent("playBackEvent", {bubbles: true,detail:{type: "firstQuartile"}}));
+      }
+
+      if (!that.midpoint && (progress >= 0.49 && progress <= 0.51)) {
+        that.midpoint = progress;
+        this.dispatchEvent(new CustomEvent("playBackEvent", {bubbles: true,detail:{type: "midpoint"}}));
+      }
+
+      if (!that.thirdQuartile && (progress >= 0.74 && progress <= 0.76)) {
+        that.thirdQuartile = progress;
+        this.dispatchEvent(new CustomEvent("playBackEvent", {bubbles: true,detail:{type: "thirdQuartile"}}));
+      }
+
+      if (!that.complete && progress >= 0.99) {
+        that.complete = progress;
+        this.dispatchEvent(new CustomEvent("playBackEvent", {bubbles: true,detail:{type: "complete"}}));
+      }
+
+    });
+
+  function update(landscapeMode) {
+    let video = document.getElementById(`video-${this.containerId}`);
+    let inline = "?playsinline=1";
+    let videoFile = landscapeMode ? this.data.videoLandscapeUrl+inline : this.data.videoPortraitUrl+inline;
+    video.src = videoFile;
+    video.currentTime = this.currentTime ? this.currentTime : 0;
+  }
+
+}
+
+
+
 // ERROR EVENT LISTENER
 (function(){
     window.addEventListener("error", function(m){
@@ -26,6 +197,15 @@ var visibleFrameIndex = -1;
 var players = [];
 var bigScreen = true;
 var landscapeMode = false;
+var mediaCache = undefined;
+
+var isIOS = (function () {
+    var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    var isAppleDevice = navigator.userAgent.includes('Macintosh');
+    var isTouchScreen = navigator.maxTouchPoints >= 1;
+
+    return isIOS || (isAppleDevice && isTouchScreen);
+})();
 
 function doMraidReadyCheck(){
     if (mraid.getState() == 'loading') {
@@ -49,6 +229,9 @@ function initPromoApp(isBigScreen) {
         bigScreen = isBigScreen;
     }
     framesData = data.frames;
+    
+    //mediaCache = MediaCache(framesData);
+    
     doMraidReadyCheck();
 }
 
@@ -356,16 +539,16 @@ function updateOnSwipe() {
       
     // Update video players
     let videoViews = document.getElementsByClassName("videoView");
-    Array.prototype.forEach.call(videoViews, function(videoView) {
-      videoView.pause();
+    Array.prototype.forEach.call(videoViews, function(video) {
+        video.pause();
     })
 
-    let videoView = document.getElementById(`video-${visibleFrameIndex}`);
-    if (videoView) {
-      if (videoView.paused || videoView.ended) {
-        videoView.play();
+    let video = document.getElementById(`video-${visibleFrameIndex}`);
+    if (video) {
+      if (video.paused || video.ended) {
+          video.play();
       } else {
-        videoView.pause();
+          video.pause();
       }
     }
 
@@ -377,18 +560,18 @@ function updateOnSwipe() {
 
 // Update player on isViewable state change
 function updatePlayer(){
-    let videoView = document.getElementById(`video-${visibleFrameIndex}`);
-    if (videoView && isInViewport(videoView)){
+    let video = document.getElementById(`video-${visibleFrameIndex}`);
+    if (video && isInViewport(video)){
         if (mraid.isViewable() == true) {
-          if (videoView.paused || videoView.ended) {
-              videoView.play();
+          if (video.paused || video.ended) {
+              video.play();
           }
           else {
-              videoView.pause();
+              video.pause();
           }
         }
         else {
-            videoView.pause();
+            video.pause();
         }
     }
 }
@@ -493,8 +676,8 @@ function closeAction(index) {
     
     let videoViews = document.getElementsByClassName("videoView");
     if (videoViews.length>0){
-        Array.prototype.forEach.call(videoViews, function(videoView) {
-          videoView.pause();
+        Array.prototype.forEach.call(videoViews, function(video) {
+            video.pause();
         })
     }
     
