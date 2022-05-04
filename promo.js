@@ -119,7 +119,7 @@ function Player (containerId, data){
     let video = document.createElement("video");
     video.className = "videoView";
     video.id = `video-${containerId}`;
-    video.autoplay = containerId == "0";
+    video.autoplay = false//containerId == "0";
     video.muted = false;
     video.playsinline = true;
     video.webkitPlaysinline = true;
@@ -129,8 +129,6 @@ function Player (containerId, data){
     container.appendChild(video);
 
     let that = this;
-    
-    
     
     video.onloadedmetadata = function() {
         console.log("video.onloadedmetadata");
@@ -202,7 +200,7 @@ function Player (containerId, data){
       
       let inline = "?playsinline=1";
       let videoFile = landscapeMode ? this.data.videoLandscapeUrl+inline : this.data.videoPortraitUrl+inline;
-      console.log("MODE: " + landscapeMode + ", SET SRC: " + videoFile);
+      //console.log("MODE: " + landscapeMode + ", SET SRC: " + videoFile);
       video.src = videoFile;
       video.currentTime = this.currentTime ? this.currentTime : 0;
       if (continuePlay === true) {
@@ -341,14 +339,16 @@ function buildFrames() {
         mraid.addEventListener("viewableChange", function onVisible(){
             if (mraid.isViewable() == true) {
                 mraid.removeEventListener("viewableChange", onVisible);
-                startAction(0);
-                updateVisiblePlayerState();
+                //startAction(0);
+                //updateVisiblePlayerState();
+                updateOnSwipe();
             }
         });
     }
     else {
-        startAction(0);
-        updateVisiblePlayerState();
+        //startAction(0);
+        //updateVisiblePlayerState();
+        updateOnSwipe();
     }
 
     document.getElementById(swipeViewId).addEventListener('scroll', function() {
@@ -603,7 +603,7 @@ function updateOnSwipe() {
   })
 
   if (visibleFrameIndex>-1) {
-      //console.log("visibleFrameIndex: " + visibleFrameIndex);
+      console.log("visibleFrameIndex: " + visibleFrameIndex);
       
     // Update video players
     let videoViews = document.getElementsByClassName("videoView");
