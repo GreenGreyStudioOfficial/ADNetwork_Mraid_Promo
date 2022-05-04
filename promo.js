@@ -2,24 +2,33 @@
  * promo.js
 */
 
+/*
+function Download(url,onComplete) {
+    console.log("Start download: " + url);
+    var http = new XMLHttpRequest();
+    http.open('GET', url,true);
+    http.responseType = 'blob';
+    http.onload = function() {
+        console.log("BANANA")
+        if (this.status === 200|| this.status == 0) {
+            const localUrl = URL.createObjectURL(this.response);
+            console.log("Video downloaded: " + localUrl);
+            onComplete(localUrl);
+        }
+    }
+    
+    http.onerror = function(error){
+        console.log("DOWNLOAD ERROR: ");
+        console.log(error);
+    }
+    
+    http.send();
+}
+
 function ProcessUrl(id, url,onComplete) {
     var http = new XMLHttpRequest();
     http.open('GET', url);
     http.responseType = 'blob';
-    
-    /*
-    http.onreadystatechange = function() {
-        if (http.readyState == 4){
-            if (event.target.status == 200 || event.target.status == 0) {
-                console.log("BANANA: " + http.status);
-                var blob = this.response;//new Blob(this.response,{type: 'image/png'});
-                var localUrl = URL.createObjectURL(this.response);
-                console.log("onreadystatechange. ID: " + id + ", localUrl: " + localUrl);
-                
-            }
-        }
-    };
-    */
     
     http.onload = function() {
         if (this.status === 200|| this.status == 0) {
@@ -89,38 +98,40 @@ function MediaCache(frames) {
     }
 }
 
+*/
+
 // Video player
-function Player (containerId, data, landscapeMode){
+function Player (containerId, data){
     //console.log("Player in container: " + containerId);
-    
+    this.data = data;
     this.currentTime = undefined;
     this.videoDuration = undefined;
-    this.landscapeMode = landscapeMode;
+    
+    this.impression = undefined;
+    this.midpoint = undefined;
     this.firstQuartile = undefined;
     this.midpoint = undefined;
     this.thirdQuartile = undefined;
     this.complete = undefined;
-    this.data = data;
     this.containerId = containerId;
     
     let container = document.getElementById(containerId);
-    let inline = "?playsinline=1";
-    let videoFile = landscapeMode ? data.videoLandscapeUrl+inline : data.videoPortraitUrl+inline;
     let video = document.createElement("video");
     video.className = "videoView";
     video.id = `video-${containerId}`;
-    video.src = videoFile;
     video.autoplay = containerId == "0";
     video.muted = false;
     video.playsinline = true;
     video.webkitPlaysinline = true;
     video.controls = false;
     video.preload = "metadata";
-    video.pause();
     video.setAttribute('playsinline',"playsinline");
     container.appendChild(video);
 
     let that = this;
+    
+    
+    
     video.onloadedmetadata = function() {
         console.log("video.onloadedmetadata");
         that.videoDuration = Math.round(this.duration);
@@ -138,7 +149,12 @@ function Player (containerId, data, landscapeMode){
     video.addEventListener('timeupdate', function(event) {
       that.currentTime = this.currentTime;
       const progress = Math.round(this.currentTime/that.videoDuration*100)/100;
-
+                                  
+      if (!that.impression && (this.currentTime >= data.impTrackingTimeout/1000)) {
+        that.impression = progress;
+        this.dispatchEvent(new CustomEvent("playBackEvent", {bubbles: true,detail:{type: "impression"}}));
+      }
+                                  
       if (!that.firstQuartile && (progress >= 0.24 && progress <= 0.26)) {
         that.firstQuartile = progress;
         this.dispatchEvent(new CustomEvent("playBackEvent", {bubbles: true,detail:{type: "firstQuartile"}}));
@@ -160,15 +176,62 @@ function Player (containerId, data, landscapeMode){
       }
 
     });
-
-  function update(landscapeMode) {
-    let video = document.getElementById(`video-${this.containerId}`);
-    let inline = "?playsinline=1";
-    let videoFile = landscapeMode ? this.data.videoLandscapeUrl+inline : this.data.videoPortraitUrl+inline;
-    video.src = videoFile;
-    video.currentTime = this.currentTime ? this.currentTime : 0;
-  }
-
+        
+    /*
+    if (data.videoPortraitUrl) {
+       // download(data.videoPortraitUrl)
+        
+        download(data.videoPortraitUrl, function onComplete(localUrl) {
+            console.log("Downloaded Portrait video: " + localUrl);
+            data.cachedPortraitVideoUrl = localUrl;
+        })
+         
+    }
+        
+    if (data.videoLandscapeUrl) {
+        const download = new Download(data.videoLandscapeUrl, function onComplete(localUrl) {
+            console.log("Downloaded Landscape video: " + localUrl);
+            data.cachedLandscapeVideoUrl = localUrl;
+        })
+    }
+    */
+        
+    this.update = function update(landscapeMode) {
+      let video = document.getElementById(`video-${this.containerId}`);
+      let continuePlay = !(video.paused || video.ended)
+      
+      let inline = "?playsinline=1";
+      let videoFile = landscapeMode ? this.data.videoLandscapeUrl+inline : this.data.videoPortraitUrl+inline;
+      console.log("MODE: " + landscapeMode + ", SET SRC: " + videoFile);
+      video.src = videoFile;
+      video.currentTime = this.currentTime ? this.currentTime : 0;
+      if (continuePlay === true) {
+          video.play()
+      }
+    }
+   
+        /*
+    function download(url,onComplete) {
+        console.log("Start download: " + url);
+        var http = new XMLHttpRequest();
+        http.open('GET', url, true);
+        http.responseType = 'blob';
+        http.onload = function() {
+            console.log("BANANA")
+            if (this.status === 200|| this.status == 0) {
+                const localUrl = URL.createObjectURL(this.response);
+                console.log("Video downloaded: " + localUrl);
+                //onComplete(localUrl);
+            }
+        }
+  
+        http.onerror = function(e) {
+            console.log('err' ,e);
+        }
+        
+        http.send();
+    }
+*/
 }
 
 
@@ -239,8 +302,8 @@ function addMraidEventListeners() {
     //mraid.addEventListener("stateChange", stateChangeHandler);
     mraid.addEventListener("sizeChange", updateUI);
     mraid.addEventListener("orientationChange", updateUI);
-    mraid.addEventListener("viewableChange", updatePlayer);
-    mraid.addEventListener("exposureChange", updatePlayer);
+    mraid.addEventListener("viewableChange", updateVisiblePlayerState);
+    mraid.addEventListener("exposureChange", updateVisiblePlayerState);
 }
 
 function createElement(tag, className, idName) {
@@ -279,13 +342,13 @@ function buildFrames() {
             if (mraid.isViewable() == true) {
                 mraid.removeEventListener("viewableChange", onVisible);
                 startAction(0);
-                updatePlayer();
+                updateVisiblePlayerState();
             }
         });
     }
     else {
         startAction(0);
-        updatePlayer();
+        updateVisiblePlayerState();
     }
 
     document.getElementById(swipeViewId).addEventListener('scroll', function() {
@@ -312,18 +375,23 @@ function buildVideoPlayer(data,index) {
   let frameView = createElement("div","frameView",`${index}`);
   document.getElementById(swipeViewId).appendChild(frameView);
 
-  let player = new Player(frameView.id, data, landscapeMode);
+  let player = new Player(frameView.id, data);
   players.push(player);
 
   document.addEventListener("playBackEvent", function(ev) {
     var event = {};
     event.type = ev.detail.type;
     event.urls = [];
-    data.eventTracking.forEach(function (evtr){
-      if (evtr.event === event.type) {
-        event.urls.push(evtr.url);
-      }
-    })
+    if (ev.detail.type === "impression") {
+        event.urls = data.impTracking;
+    }
+    else {
+        data.eventTracking.forEach(function (evtr){
+          if (evtr.event === event.type) {
+            event.urls.push(evtr.url);
+          }
+        })
+    }
     fireEvent(event);
   });
 
@@ -559,7 +627,7 @@ function updateOnSwipe() {
 
 
 // Update player on isViewable state change
-function updatePlayer(){
+function updateVisiblePlayerState(){
     let video = document.getElementById(`video-${visibleFrameIndex}`);
     if (video && isInViewport(video)){
         if (mraid.isViewable() == true) {
@@ -637,6 +705,7 @@ function startAction(index) {
     if (!mraid.isViewable()) {return;}
     
     var frameData = framesData[index];
+        
     if (frameData["started"] === true) {
         return;
     }
@@ -652,7 +721,10 @@ function startAction(index) {
         }
     })
     fireEvent(event);
-    setTimeout(impressionAction, frameData.impTrackingTimeout, frameData.impTracking);
+        
+    if (frameData.type === "ImageCard") {
+        setTimeout(impressionAction, frameData.impTrackingTimeout, frameData.impTracking);
+    }
 }
 
 const impressionAction = urls => {
