@@ -120,7 +120,7 @@ function Player (containerId, data){
     video.className = "videoView";
     video.id = `video-${containerId}`;
     video.autoplay = false//containerId == "0";
-    video.muted = false;
+    video.muted = true;
     video.playsinline = true;
     video.webkitPlaysinline = true;
     video.controls = false;
@@ -244,7 +244,7 @@ function Player (containerId, data){
         url += "&file=" + encodeURIComponent(m.filename);
         url += "&line=" + encodeURIComponent(m.lineno);
         url += "&col=" + encodeURIComponent(m.colno);
-        url += "&trace=" + encodeURIComponent(m.error.stack);
+        url += "&trace=" + encodeURIComponent(m.error ? m.error.stack : "");
         r.open("GET", url, true);
         r.setRequestHeader("Content-Type", "application/json");
         r.send();
@@ -615,6 +615,9 @@ function updateOnSwipe() {
     if (video) {
       if (video.paused || video.ended) {
           video.play();
+          if (video.muted) {
+              video.click();
+          }
       } else {
           video.pause();
       }
@@ -648,9 +651,12 @@ function updateVisiblePlayerState(){
 function updateUI() {
     if (document.getElementById(swipeViewId) == undefined) {return}
     
-    let size = mraid.getScreenSize();
-    landscapeMode = size.width > size.height;
-    //console.log("updateUI. landscapeMode: " + landscapeMode);
+    if (typeof mraid.getScreenSize === "function") {
+        let size = mraid.getScreenSize();
+        landscapeMode = size.width > size.height;
+        //console.log("updateUI. landscapeMode: " + landscapeMode);
+    }
+        
     // Image frames
     let imageFrames = document.getElementsByClassName('imageСard');
     if (!imageFrames || imageFrames.length === 0) {return}
