@@ -27,8 +27,11 @@
          "TEL" : "tel",
          "STORE_PICTURE" : "storePicture",
          "INLINE_VIDEO" : "inlineVideo",
-         "CALENDAR" : "calendar"
+         "CALENDAR" : "calendar",
+         "SDK" : "sdk"
      };
+     
+     var rewarded = false;
 
      var version = '3.0';
      var state = STATES.LOADING;
@@ -118,6 +121,24 @@
      mraid.supports = function(feature){
          console.log('supports - ' + feature + ' : ' + (supportedFeatures[feature] === true));
          return supportedFeatures[feature]=== true;
+     }
+     
+     // ------------------------------------------------------------------------------
+     //                      Rewarded Ad
+     // ------------------------------------------------------------------------------
+     
+     mraid.getRewarded = function(){
+         console.log('getRewarded: ' + rewarded);
+         return rewarded;
+    }
+     
+     mraid.setRewarded  = function(_rewarded){
+         console.log("setRewarded: " + _rewarded);
+         rewarded = _rewarded;
+    }
+     
+     mraid.rewardReceived = function(received){
+         window.webkit.messageHandlers.nativeapp.postMessage({"type":"reward", "value":received});
      }
      
      // ------------------------------------------------------------------------------

@@ -100,6 +100,91 @@ function MediaCache(frames) {
 
 */
 
+// Utility
+function createElement(tag, className, idName) {
+  const element = document.createElement(tag);
+  if (className) element.classList.add(className);
+  if (idName) element.id = idName;
+  return element
+}
+
+// Alert
+function AlertView(options) {
+  var instance = this,
+    containerId = options.containerId,
+    okAction = options.onOk || function () {},
+    cancelAction = options.onCancel|| function () {};
+
+  this.show = function () {
+      let promo = document.getElementById(containerId);
+      let background = createElement("div",undefined, "AlertViewBackground");
+      promo.appendChild(background);
+      
+      let container = createElement("div", "AlertViewContainer");
+      background.appendChild(container);
+      
+      let titleLabel = createElement("h3", "AlertViewTitleLabel");
+      container.appendChild(titleLabel);
+      titleLabel.textContent = "При закрытии ролика награда не будет начислена";
+      
+      let buttonsContainer = createElement("div", "AlertViewButtonsContainer");
+      container.appendChild(buttonsContainer);
+      
+      let okButton = createElement("h4", "AlertViewButton");
+      buttonsContainer.appendChild(okButton);
+      okButton.textContent = "Ок";
+      
+      let cancelButton = createElement("h4", "AlertViewButton");
+      buttonsContainer.appendChild(cancelButton);
+      cancelButton.textContent = "Отменить";
+      
+      okButton.addEventListener("click", function () {
+          okAction();
+          instance.hide();
+      });
+      
+      cancelButton.addEventListener("click", function () {
+          cancelAction();
+          instance.hide();
+      });
+  };
+
+  this.hide = function () {
+      let view = document.getElementById("AlertViewBackground");
+      view.innerHTML = "";
+      view.remove();
+  };
+}
+
+// Countdown
+function Countdown(options) {
+  var timer,
+  instance = this,
+  seconds = options.seconds || 10,
+  updateStatus = options.onUpdateStatus || function () {},
+  counterEnd = options.onCounterEnd || function () {};
+
+  function decrementCounter() {
+    updateStatus(seconds);
+    if (seconds === 0) {
+      counterEnd();
+      instance.stop();
+    }
+    seconds--;
+  }
+
+  this.start = function () {
+    clearInterval(timer);
+    timer = 0;
+    seconds = options.seconds;
+    timer = setInterval(decrementCounter, 1000);
+  };
+
+  this.stop = function () {
+    clearInterval(timer);
+  };
+}
+
 // Video player
 function Player (containerId, data){
     //console.log("Player in container: " + containerId);
@@ -258,6 +343,7 @@ var visibleFrameIndex = -1;
 var players = [];
 var bigScreen = true;
 var landscapeMode = false;
+var rewardCounter = undefined;
 var mediaCache = undefined;
 
 var isIOS = (function () {
@@ -304,13 +390,6 @@ function addMraidEventListeners() {
     mraid.addEventListener("exposureChange", updateVisiblePlayerState);
 }
 
-function createElement(tag, className, idName) {
-  const element = document.createElement(tag);
-  if (className) element.classList.add(className);
-  if (idName) element.id = idName;
-  return element
-}
-
 // Build UI
 function showMyAd() {
     addMraidEventListeners();
@@ -326,6 +405,47 @@ function showMyAd() {
     if (framesData) {
        buildFrames();
     }
+        
+    // Close button
+    if (mraid.supports && mraid.supports("sdk")){
+        
+        let closeButtonContainer = createElement("div","closeButtonContainer", "closeButtonContainer");
+        promo.appendChild(closeButtonContainer);
+        
+        let closeButton = createElement("img","closeButton", "closeButton");
+        closeButton.src = "https://files.mobidriven.com/players/promo/images/close_rect.png";
+        closeButton.addEventListener("click", function(event) {
+          closeAction(visibleFrameIndex);
+        });
+        closeButtonContainer.appendChild(closeButton);
+        
+        if (typeof mraid.getRewarded === "function" && mraid.getRewarded() === true){
+            let visibleFrame = framesData[visibleFrameIndex];
+            
+            // Add counter label
+            let counterLabel = createElement("h5","closeButtonCounterLabel", "closeButtonCounterLabel");
+            closeButtonContainer.appendChild(counterLabel);
+            let startCount = visibleFrame.impTrackingTimeout/1000;
+            counterLabel.textContent = `${startCount}`;
+            
+            // Add counter
+            var myCounter = new Countdown({
+                seconds:visibleFrame.impTrackingTimeout/1000,
+                onUpdateStatus: function(sec){
+                    rewardCounter = sec;
+                    counterLabel.textContent = `${sec}`;
+                },
+                onCounterEnd: function(){
+                    rewardCounter = undefined;
+                    counterLabel.style.opacity = 0;
+                }
+            });
+
+            myCounter.start();
+        }
+    }
+        
+        
     updateUI();
 }
 
@@ -339,15 +459,11 @@ function buildFrames() {
         mraid.addEventListener("viewableChange", function onVisible(){
             if (mraid.isViewable() == true) {
                 mraid.removeEventListener("viewableChange", onVisible);
-                //startAction(0);
-                //updateVisiblePlayerState();
                 updateOnSwipe();
             }
         });
     }
     else {
-        //startAction(0);
-        //updateVisiblePlayerState();
         updateOnSwipe();
     }
 
@@ -418,15 +534,6 @@ function buildVideoPlayer(data,index) {
     });
     topButtonsContainer.appendChild(logoAd);
   }
-
-  // Close button
-  let closeButtonView = createElement("img","closeButtonVideo");
-  closeButtonView.src = "https://files.mobidriven.com/players/promo/images/close_rect.png";
-  closeButtonView.addEventListener("click", function(event) {
-    closeAction(index);
-  });
-  topButtonsContainer.appendChild(closeButtonView);
-
 
   let bottomButtonsContainer = createElement("div","bottomButtonsContainer");
   overlayView.appendChild(bottomButtonsContainer);
@@ -569,20 +676,13 @@ function buildImageCard(data,index) {
   let rightButtonsContainer = createElement("div","rightButtonsContainer");
   overlayView.appendChild(rightButtonsContainer);
 
-  // Close button
-  let closeButtonView = createElement("img","closeButtonBanner");
-  closeButtonView.src = "https://files.mobidriven.com/players/promo/images/close.png";
-  closeButtonView.addEventListener("click", function(event) {
-    closeAction(index);
-  });
-  rightButtonsContainer.appendChild(closeButtonView);
-
   // Swipe button
   if (index == 0) {
     let swipeButtonView = createElement("img","swipe");
     swipeButtonView.src = "https://files.mobidriven.com/players/promo/images/swipe.png";
     rightButtonsContainer.appendChild(swipeButtonView);
   }
+    
 }
 
 var isInViewport = function (elem) {
@@ -604,6 +704,8 @@ function updateOnSwipe() {
 
   if (visibleFrameIndex>-1) {
       console.log("visibleFrameIndex: " + visibleFrameIndex);
+      
+      //updateCloseButton();
       
     // Update video players
     let videoViews = document.getElementsByClassName("videoView");
@@ -654,7 +756,6 @@ function updateUI() {
     if (typeof mraid.getScreenSize === "function") {
         let size = mraid.getScreenSize();
         landscapeMode = size.width > size.height;
-        //console.log("updateUI. landscapeMode: " + landscapeMode);
     }
         
     // Image frames
@@ -678,33 +779,51 @@ function updateUI() {
           let frameData = framesData[parseInt(frame.parentElement.id)];
           banner.src = frameData[imgSrc];
         }
-  })
+    })
 
-  // Update GG logo position
-  Array.prototype.forEach.call(document.getElementsByClassName('logoGG'), function(element) {
+    // Update GG logo position
+    Array.prototype.forEach.call(document.getElementsByClassName('logoGG'), function(element) {
     classToRemove = landscapeMode ? 'logoGG-portrait' : 'logoGG-landscape';
     classToAdd = landscapeMode ? 'logoGG-landscape' : 'logoGG-portrait';
       element.classList.remove(classToRemove);
       element.classList.add(classToAdd);
-  });
+    });
     
     // Update swipe image position
     Array.prototype.forEach.call(document.getElementsByClassName('swipe'), function(element) {
         element.style.marginBottom = (bigScreen && !landscapeMode) ? "65px" : "25px";
     });
-    
+
     // Update GG logo video image position
     Array.prototype.forEach.call(document.getElementsByClassName('logoGGvideo'), function(elem) {
         elem.style.marginBottom = (bigScreen && !landscapeMode) ? "70px" : "25px";
     });
-
-  // Update video frames
-  players.forEach(function (player){
+        
+    // Update video frames
+    players.forEach(function (player){
     player.update(landscapeMode);
-  })
+    })
 
 }
+     
+/*
+function updateCloseButton() {
+    
+    let closeButton = document.getElementById("closeButton");
+    if (!closeButton) {return;}
+        
+    let visibleFrame = framesData[visibleFrameIndex];
 
+    closeButton.src = visibleFrame.type === "VideoPlayer" ? "https://files.mobidriven.com/players/promo/images/close_rect.png" : "https://files.mobidriven.com/players/promo/images/close.png";
+        
+    let class_ToRemove = visibleFrame.type === "VideoPlayer" ? 'closeButtonBanner' : 'closeButtonVideo';
+    let class_ToAdd = visibleFrame.type === "VideoPlayer" ? 'closeButtonVideo' : 'closeButtonBanner';
+        
+    closeButton.classList.remove(class_ToRemove);
+    closeButton.classList.add(class_ToAdd);
+}
+*/
+                           
 // Actions
 
 function startAction(index) {
@@ -742,25 +861,57 @@ const impressionAction = urls => {
 
 
 function closeAction(index) {
-  let frameData = framesData[index];
-  var event = {};
-  event.type = "close";
-  event.urls = [];
-  frameData.eventTracking.forEach(function (ev){
-    if (ev.event === event.type) {
-      event.urls.push(ev.url);
+        
+    // Pause visible video
+    var video = undefined;
+    let visibleFrame = framesData[visibleFrameIndex];
+    if (visibleFrame.type === "VideoPlayer") {
+        let vid = document.getElementById(`video-${visibleFrameIndex}`);
+        if (vid && isInViewport(vid)){
+            video = vid;
+        }
     }
-  })
-    
-    let videoViews = document.getElementsByClassName("videoView");
-    if (videoViews.length>0){
-        Array.prototype.forEach.call(videoViews, function(video) {
-            video.pause();
+    if (video) {video.pause();}
+        
+    if (mraid.supports && mraid.supports("sdk") && rewardCounter) {
+        const alert = new AlertView({
+            containerId:"promo",
+            onOk:() => {
+                close(index);
+            },
+            onCancel:()=> {
+                if (video && !video.ended) {video.play();}
+            }
         })
+        alert.show();
     }
+    else {
+        close(index);
+    }
+        
     
-  fireEvent(event);
 }
+                           
+function close(index) {
+    // For rewarded ad
+    if (typeof mraid.getRewarded === "function" && mraid.getRewarded() === true && typeof mraid.rewardReceived === "function" ){
+        mraid.rewardReceived(rewardCounter === undefined)
+    }
+        
+        
+    let frameData = framesData[index];
+    var event = {};
+    event.type = "close";
+    event.urls = [];
+    frameData.eventTracking.forEach(function (ev){
+        if (ev.event === event.type) {
+          event.urls.push(ev.url);
+        }
+    })
+
+    fireEvent(event);
+}
+                           
 
 function clickAction(index, buttonClick) {
   let frameData = framesData[index];
