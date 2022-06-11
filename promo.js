@@ -159,19 +159,30 @@ function AlertView(options) {
 // Countdown
 function Countdown(options) {
   var timer,
+  isPaused = false,
   instance = this,
   seconds = options.seconds || 10,
   updateStatus = options.onUpdateStatus || function () {},
   counterEnd = options.onCounterEnd || function () {};
 
   function decrementCounter() {
-    updateStatus(seconds);
-    if (seconds === 0) {
-      counterEnd();
-      instance.stop();
-    }
-    seconds--;
+      if(!isPaused) {
+        updateStatus(seconds);
+        if (seconds === 0) {
+          counterEnd();
+          instance.stop();
+        }
+        seconds--;
+      }
   }
+    
+    this.pause = function() {
+        isPaused = true;
+    }
+    
+    this.resume = function() {
+        isPaused = false;
+    }
 
   this.start = function () {
     clearInterval(timer);
@@ -429,7 +440,7 @@ function showMyAd() {
             counterLabel.textContent = `${startCount}`;
             
             // Add counter
-            var myCounter = new Countdown({
+            myCounter = new Countdown({
                 seconds:visibleFrame.impTrackingTimeout/1000,
                 onUpdateStatus: function(sec){
                     rewardCounter = sec;
@@ -861,35 +872,34 @@ const impressionAction = urls => {
 
 
 function closeAction(index) {
-        
-    // Pause visible video
-    var video = undefined;
-    let visibleFrame = framesData[visibleFrameIndex];
-    if (visibleFrame.type === "VideoPlayer") {
-        let vid = document.getElementById(`video-${visibleFrameIndex}`);
-        if (vid && isInViewport(vid)){
-            video = vid;
-        }
-    }
-    if (video) {video.pause();}
-        
-    if (mraid.supports && mraid.supports("sdk") && rewardCounter) {
-        const alert = new AlertView({
-            containerId:"promo",
-            onOk:() => {
-                close(index);
-            },
-            onCancel:()=> {
-                if (video && !video.ended) {video.play();}
-            }
-        })
-        alert.show();
-    }
-    else {
-        close(index);
-    }
-        
-    
+   // Pause visible video
+   var video = undefined;
+   let visibleFrame = framesData[visibleFrameIndex];
+   if (visibleFrame.type === "VideoPlayer") {
+       let vid = document.getElementById(`video-${visibleFrameIndex}`);
+       if (vid && isInViewport(vid)){
+           video = vid;
+       }
+   }
+   if (video) {video.pause();}
+       
+   if (mraid.supports && mraid.supports("sdk") && rewardCounter) {
+       const alert = new AlertView({
+           containerId:"promo",
+           onOk:() => {
+               close(index);
+           },
+           onCancel:()=> {
+               if (myCounter) {myCounter.resume();}
+               if (video && !video.ended) {video.play();}
+           }
+       })
+       alert.show();
+       if (myCounter) {myCounter.pause();}
+   }
+   else {
+       close(index);
+   }
 }
                            
 function close(index) {
