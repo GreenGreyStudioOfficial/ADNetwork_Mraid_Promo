@@ -800,6 +800,7 @@ function updateUI() {
       element.classList.add(classToAdd);
     });
     
+        /*
     // Update swipe image position
     Array.prototype.forEach.call(document.getElementsByClassName('swipe'), function(element) {
         element.style.marginBottom = (bigScreen && !landscapeMode) ? "65px" : "25px";
@@ -809,6 +810,7 @@ function updateUI() {
     Array.prototype.forEach.call(document.getElementsByClassName('logoGGvideo'), function(elem) {
         elem.style.marginBottom = (bigScreen && !landscapeMode) ? "70px" : "25px";
     });
+        */
         
     // Update video frames
     players.forEach(function (player){
