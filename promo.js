@@ -2,103 +2,6 @@
  * promo.js
 */
 
-/*
-function Download(url,onComplete) {
-    console.log("Start download: " + url);
-    var http = new XMLHttpRequest();
-    http.open('GET', url,true);
-    http.responseType = 'blob';
-    http.onload = function() {
-        console.log("BANANA")
-        if (this.status === 200|| this.status == 0) {
-            const localUrl = URL.createObjectURL(this.response);
-            console.log("Video downloaded: " + localUrl);
-            onComplete(localUrl);
-        }
-    }
-    
-    http.onerror = function(error){
-        console.log("DOWNLOAD ERROR: ");
-        console.log(error);
-    }
-    
-    http.send();
-}
-
-function ProcessUrl(id, url,onComplete) {
-    var http = new XMLHttpRequest();
-    http.open('GET', url);
-    http.responseType = 'blob';
-    
-    http.onload = function() {
-        if (this.status === 200|| this.status == 0) {
-            const localUrl = URL.createObjectURL(this.response);
-            //console.log("onload. ID: " + id + ", localUrl: " + localUrl);
-            onComplete(id, localUrl);
-        }
-    }
-    
-    http.onerror = function() {
-        console.log('err' ,arguments);
-    }
-    http.send();
-}
-
-// Media cache
-function MediaCache(frames) {
-    this.data = {};
-    this.requests = new Array();
-    
-    frames.forEach(function (frame){
-        switch (frame.type) {
-          case "VideoPlayer":
-                processVideoFrameData(frame);
-                break;
-          case "ImageCard":
-                //processImageFrameData(frame);
-                break;
-          default:
-                break;
-        }
-    })
-    
-    function processVideoFrameData(frame) {
-        if (frame.videoPortraitFileId && frame.videoPortraitUrl) {
-            queueMedia(frame.videoPortraitFileId, frame.videoPortraitUrl);
-        }
-        if (frame.videoLandscapeFileId && frame.videoLandscapeUrl) {
-            queueMedia(frame.videoLandscapeFileId, frame.videoLandscapeUrl);
-        }
-        //if (frame.logoImageFileId && frame.videoPortraitUrl) {
-        //    queueMedia(frame.logoImageFileId, frame.logoImageUrl);
-        //}
-    }
-    
-    function processImageFrameData(frame) {
-        if (frame.imagePortraitFileId && frame.imagePortraitUrl) {
-            queueMedia(frame.imagePortraitFileId, frame.imagePortraitUrl);
-        }
-        if (frame.imageLandscapeFileId && frame.imageLandscapeUrl) {
-            queueMedia(frame.imageLandscapeFileId, frame.imageLandscapeUrl);
-        }
-        if (frame.buttonStoreFileId && frame.buttonStoreUrl) {
-            queueMedia(frame.buttonStoreFileId, frame.buttonStoreUrl);
-        }
-    }
-    
-    function queueMedia(id, url) {
-        console.log("Download media. ID: " + id + ", URL: " + url);
-        
-        let that = this;
-         this.requests.push(new ProcessUrl(id,url, function onComplete(id, localUrl) {
-             console.log("Downloaded. ID: " + id + ", localUrl: " + localUrl);
-             that.data[id] = localUrl;
-         }))
-         
-    }
-}
-
-*/
 
 // Utility
 function createElement(tag, className, idName) {
@@ -227,14 +130,15 @@ function Player (containerId, data){
     let that = this;
     
     video.onloadedmetadata = function() {
-        console.log("video.onloadedmetadata");
+        //console.log("video.onloadedmetadata");
         that.videoDuration = Math.round(this.duration);
         this.currentTime = that.currentTime ? that.currentTime : 0;
     }
-      
-    //video.onloadeddata = function(){
-    //  console.log("video.onloadeddata");
-    //}
+    
+    video.oncanplaythrough = function() {
+        //console.log("video.oncanplaythrough");
+
+    }
 
     video.addEventListener("click", function(event) {
       this.muted = !this.muted;
@@ -271,61 +175,19 @@ function Player (containerId, data){
 
     });
         
-    /*
-    if (data.videoPortraitUrl) {
-       // download(data.videoPortraitUrl)
-        
-        download(data.videoPortraitUrl, function onComplete(localUrl) {
-            console.log("Downloaded Portrait video: " + localUrl);
-            data.cachedPortraitVideoUrl = localUrl;
-        })
-         
-    }
-        
-    if (data.videoLandscapeUrl) {
-        const download = new Download(data.videoLandscapeUrl, function onComplete(localUrl) {
-            console.log("Downloaded Landscape video: " + localUrl);
-            data.cachedLandscapeVideoUrl = localUrl;
-        })
-    }
-    */
-        
     this.update = function update(landscapeMode) {
       let video = document.getElementById(`video-${this.containerId}`);
       let continuePlay = !(video.paused || video.ended)
       
-      let inline = "?playsinline=1";
-      let videoFile = landscapeMode ? this.data.videoLandscapeUrl+inline : this.data.videoPortraitUrl+inline;
-      //console.log("MODE: " + landscapeMode + ", SET SRC: " + videoFile);
+      //let inline = "?playsinline=1";
+      let videoFile = landscapeMode ? this.data.videoLandscapeUrl : this.data.videoPortraitUrl;
+      //console.log("MODE: " + landscapeMode + ", SET VIDEO SRC: " + videoFile);
       video.src = videoFile;
       video.currentTime = this.currentTime ? this.currentTime : 0;
       if (continuePlay === true) {
           video.play()
       }
     }
-   
-        /*
-    function download(url,onComplete) {
-        console.log("Start download: " + url);
-        var http = new XMLHttpRequest();
-        http.open('GET', url, true);
-        http.responseType = 'blob';
-        http.onload = function() {
-            console.log("BANANA")
-            if (this.status === 200|| this.status == 0) {
-                const localUrl = URL.createObjectURL(this.response);
-                console.log("Video downloaded: " + localUrl);
-                //onComplete(localUrl);
-            }
-        }
-  
-        http.onerror = function(e) {
-            console.log('err' ,e);
-        }
-        
-        http.send();
-    }
-*/
 }
 
 
@@ -370,7 +232,8 @@ function doMraidReadyCheck(){
         mraid.addEventListener("ready", mraidIsReady);
     }
     else {
-        showMyAd();
+        //showMyAd();
+        downloadMedia();
     }
 }
 
@@ -378,7 +241,7 @@ function mraidIsReady()
 {
     console.log("mraidIsReady!")
     mraid.removeEventListener("ready", mraidIsReady);
-    showMyAd();
+    downloadMedia();
 }
 
 function initPromoApp(isBigScreen) {
@@ -388,18 +251,129 @@ function initPromoApp(isBigScreen) {
     }
     framesData = data.frames;
     
-    //mediaCache = MediaCache(framesData);
-    
     doMraidReadyCheck();
 }
 
 function addMraidEventListeners() {
-    //mraid.addEventListener("stateChange", stateChangeHandler);
     mraid.addEventListener("sizeChange", updateUI);
     mraid.addEventListener("orientationChange", updateUI);
     mraid.addEventListener("viewableChange", updateVisiblePlayerState);
     mraid.addEventListener("exposureChange", updateVisiblePlayerState);
 }
+                           
+                           
+// Preload media data
+function downloadMedia() {
+    if (framesData && framesData.length > 0) {
+        var counter = 0;
+        framesData.forEach(function(frameData,index){
+            preloadMediaForFrame(index, function(){
+                counter = counter + 1;
+                if (counter === framesData.length) {
+                    showMyAd();
+                }
+            });
+        })
+    }
+}
+                           
+function preloadMediaForFrame(index, onComplete) {
+    //console.log("preloadMedia for frame: " + index);
+    var frame = framesData[index];
+    var d1,d2,d3 = undefined;
+        
+    if (frame.type == "VideoPlayer") {
+        if (frame.logoImageUrl) {
+            downloadFile(frame.logoImageUrl, function(localUrl){
+                d1 = localUrl !== undefined;
+                frame.logoImageUrl = d1 ? localUrl : frame.logoImageUrl;
+                if (allMediaDownloaded() === true) {
+                    onComplete();
+                }
+            });
+        }
+        if (frame.videoPortraitUrl) {
+            downloadFile(frame.videoPortraitUrl,function(localUrl){
+                d2 = localUrl !== undefined;
+                frame.videoPortraitUrl = d2 ? localUrl : frame.videoPortraitUrl;
+                if (allMediaDownloaded() === true) {
+                    onComplete();
+                }
+            });
+        }
+        if (frame.videoLandscapeUrl) {
+            downloadFile(frame.videoLandscapeUrl,function(localUrl){
+                d3 = localUrl !== undefined;
+                frame.videoLandscapeUrl = d3 ? localUrl : frame.videoLandscapeUrl;
+                if (allMediaDownloaded() === true) {
+                    onComplete();
+                }
+            });
+        }
+    }
+    else if (frame.type == "ImageCard") {
+        if (frame.imagePortraitUrl) {
+            downloadFile(frame.imagePortraitUrl,function(localUrl){
+                d1 = localUrl !== undefined;
+                frame.imagePortraitUrl = d1 ? localUrl : frame.imagePortraitUrl;
+                if (allMediaDownloaded() === true) {
+                    onComplete();
+                }
+            });
+        }
+        if (frame.imageLandscapeUrl) {
+            downloadFile(frame.imageLandscapeUrl,function(localUrl){
+                d2 = localUrl !== undefined;
+                frame.imageLandscapeUrl = d2 ? localUrl : frame.imageLandscapeUrl;
+                if (allMediaDownloaded() === true) {
+                    onComplete();
+                }
+            });
+        }
+        if (frame.buttonStoreUrl) {
+            downloadFile(frame.buttonStoreUrl,function(localUrl){
+                d3 = localUrl !== undefined;
+                frame.buttonStoreUrl = d3 ? localUrl : frame.buttonStoreUrl;
+                if (allMediaDownloaded() === true) {
+                    onComplete();
+                }
+            });
+        }
+    }
+        
+    function allMediaDownloaded() {
+        return d1 !== undefined && d2 !== undefined && d3 !== undefined
+    }
+                
+        
+    function downloadFile(url,completionHandler) {
+        //console.log("Frame: " + index + ", begin download: " + url);
+        
+        var http = new XMLHttpRequest();
+        http.open('GET', url,true);
+        http.responseType = 'blob';
+        http.onload = function() {
+            if (this.status === 200|| this.status == 0) {
+                const localUrl = URL.createObjectURL(this.response);
+                //console.log("File downloaded: " + localUrl);
+                completionHandler(localUrl);
+            }
+        }
+        
+        //http.onprogress = function(event) {
+        //    console.log(`Загружено ${event.loaded} из ${event.total}`);
+        //};
+        
+        http.onerror = function(error){
+            console.log("DOWNLOAD ERROR for file: " + url);
+            console.log(error);
+            completionHandler()
+        }
+        
+        http.send();
+    }
+}
+                           
 
 // Build UI
 function showMyAd() {
@@ -456,8 +430,9 @@ function showMyAd() {
         }
     }
         
-        
     updateUI();
+        
+    mraid.sendContentReadyEvent(true)
 }
 
 

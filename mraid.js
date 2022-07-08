@@ -67,6 +67,11 @@
          }
     }
      
+     mraid.sendContentReadyEvent = function (isLoaded) {
+         console.log("sendContentReadyEvent (" + isLoaded + ")" );
+         window.webkit.messageHandlers.nativeapp.postMessage({"type":"contentReady", "value":isLoaded});
+     }
+     
      // ------------------------------------------------------------------------------
      //                      Screen size
      // ------------------------------------------------------------------------------
