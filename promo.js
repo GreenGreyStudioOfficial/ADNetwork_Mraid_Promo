@@ -214,7 +214,6 @@ var swipeViewId = "swipeView";
 var framesData = [];
 var visibleFrameIndex = -1;
 var players = [];
-var bigScreen = true;
 var landscapeMode = false;
 var rewardCounter = undefined;
 var mediaCache = undefined;
@@ -244,13 +243,9 @@ function mraidIsReady()
     downloadMedia();
 }
 
-function initPromoApp(isBigScreen) {
+function initPromoApp() {
     console.log('Promo app started');
-    if (isBigScreen) {
-        bigScreen = isBigScreen;
-    }
     framesData = data.frames;
-    
     doMraidReadyCheck();
 }
 
@@ -278,7 +273,7 @@ function downloadMedia() {
 }
                            
 function preloadMediaForFrame(index, onComplete) {
-    //console.log("preloadMedia for frame: " + index);
+    console.log("preloadMedia for frame: " + index);
     var frame = framesData[index];
     var d1,d2,d3 = undefined;
         
@@ -766,26 +761,23 @@ function updateUI() {
           banner.src = frameData[imgSrc];
         }
     })
+        
+        
+    if (typeof mraid.getBigScreen === "function") {
+        let bigScreen =  mraid.getBigScreen();
+        console.log("bigScreen: " + bigScreen);
+        
+        // Update logoGG position
+        Array.prototype.forEach.call(document.getElementsByClassName('logoGG'), function(element) {
+            element.style.marginTop = (bigScreen && !landscapeMode) ? "60px" : "30px";
+        });
 
-    // Update GG logo position
-    Array.prototype.forEach.call(document.getElementsByClassName('logoGG'), function(element) {
-    classToRemove = landscapeMode ? 'logoGG-portrait' : 'logoGG-landscape';
-    classToAdd = landscapeMode ? 'logoGG-landscape' : 'logoGG-portrait';
-      element.classList.remove(classToRemove);
-      element.classList.add(classToAdd);
-    });
-    
-        /*
-    // Update swipe image position
-    Array.prototype.forEach.call(document.getElementsByClassName('swipe'), function(element) {
-        element.style.marginBottom = (bigScreen && !landscapeMode) ? "65px" : "25px";
-    });
-
-    // Update GG logo video image position
-    Array.prototype.forEach.call(document.getElementsByClassName('logoGGvideo'), function(elem) {
-        elem.style.marginBottom = (bigScreen && !landscapeMode) ? "70px" : "25px";
-    });
-        */
+        // Update topButtonsContainer position
+        Array.prototype.forEach.call(document.getElementsByClassName('topButtonsContainer'), function(elem) {
+            elem.style.marginTop = (bigScreen && !landscapeMode) ? "60px" : "30px";
+        });
+    }
+        
         
     // Update video frames
     players.forEach(function (player){
@@ -794,23 +786,6 @@ function updateUI() {
 
 }
      
-/*
-function updateCloseButton() {
-    
-    let closeButton = document.getElementById("closeButton");
-    if (!closeButton) {return;}
-        
-    let visibleFrame = framesData[visibleFrameIndex];
-
-    closeButton.src = visibleFrame.type === "VideoPlayer" ? "https://files.mobidriven.com/players/promo/images/close_rect.png" : "https://files.mobidriven.com/players/promo/images/close.png";
-        
-    let class_ToRemove = visibleFrame.type === "VideoPlayer" ? 'closeButtonBanner' : 'closeButtonVideo';
-    let class_ToAdd = visibleFrame.type === "VideoPlayer" ? 'closeButtonVideo' : 'closeButtonBanner';
-        
-    closeButton.classList.remove(class_ToRemove);
-    closeButton.classList.add(class_ToAdd);
-}
-*/
                            
 // Actions
 

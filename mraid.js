@@ -38,6 +38,7 @@
      var placementType = PLACEMENTS.INTERSTITIAL;
      var listeners = [];
      var screenSize = { width:0, height:0 };
+     var bigScreen = false;
      var supportedFeatures = [];
      
      var viewable = false;
@@ -97,6 +98,15 @@
          viewable = _viewable;
          console.log("setExposure: " + viewable);
          mraid.fireEvent(EVENTS.EXPOSURECHANGE)
+     }
+     
+     // For iOS big screen devices
+     mraid.setBigScreen = function(_bigScreen){
+         bigScreen = _bigScreen;
+     }
+     
+     mraid.getBigScreen = function(){
+         return bigScreen;
      }
      
      // ------------------------------------------------------------------------------
