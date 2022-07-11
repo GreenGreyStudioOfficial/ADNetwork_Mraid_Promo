@@ -770,14 +770,12 @@ function updateUI() {
         
         // Update logoGG position
         Array.prototype.forEach.call(document.getElementsByClassName('logoGG'), function(element) {
-            element.style.marginTop = (bigScreen && !landscapeMode) ? "60px" :
-            isIOS ? "30px" : "20px";
+            element.style.marginTop = (bigScreen && !landscapeMode) ? "60px" : "30px";
         });
 
         // Update topButtonsContainer position
         Array.prototype.forEach.call(document.getElementsByClassName('topButtonsContainer'), function(elem) {
-            elem.style.marginTop = (bigScreen && !landscapeMode) ? "60px" :
-            isIOS ? "30px" : "20px";
+            elem.style.marginTop = (bigScreen && !landscapeMode) ? "60px" : "30px";
         });
     }
         

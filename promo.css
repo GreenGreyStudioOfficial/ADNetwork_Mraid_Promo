@@ -68,7 +68,7 @@ body {
 
 @media (orientation: portrait) {
     .topButtonsContainer {
-        margin-top: 30px; /*calc(100vh / 14);*/
+        margin-top: 20px; /*calc(100vh / 14);*/
     }
 }
 
@@ -351,7 +351,7 @@ body {
     margin-left: 30px;
     cursor: pointer;
     pointer-events: all;
-    margin-top: 30px; /*calc(100vh / 14);*/
+    margin-top: 20px; /*calc(100vh / 14);*/
     margin-bottom: auto;
 }
 
