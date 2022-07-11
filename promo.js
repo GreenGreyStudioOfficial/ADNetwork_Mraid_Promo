@@ -765,16 +765,19 @@ function updateUI() {
         
     if (typeof mraid.getBigScreen === "function") {
         let bigScreen =  mraid.getBigScreen();
-        console.log("bigScreen: " + bigScreen);
+        //console.log("bigScreen: " + bigScreen);
+        //console.log("isIOS: " + isIOS);
         
         // Update logoGG position
         Array.prototype.forEach.call(document.getElementsByClassName('logoGG'), function(element) {
-            element.style.marginTop = (bigScreen && !landscapeMode) ? "60px" : "30px";
+            element.style.marginTop = (bigScreen && !landscapeMode) ? "60px" :
+            isIOS ? "30px" : "20px";
         });
 
         // Update topButtonsContainer position
         Array.prototype.forEach.call(document.getElementsByClassName('topButtonsContainer'), function(elem) {
-            elem.style.marginTop = (bigScreen && !landscapeMode) ? "60px" : "30px";
+            elem.style.marginTop = (bigScreen && !landscapeMode) ? "60px" :
+            isIOS ? "30px" : "20px";
         });
     }
         
